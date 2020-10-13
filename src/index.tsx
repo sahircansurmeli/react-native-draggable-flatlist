@@ -93,6 +93,7 @@ export type RenderItemParams<T> = {
   index?: number; // This is technically a "last known index" since cells don't necessarily rerender when their index changes
   drag: () => void;
   isActive: boolean;
+  isPressedIn: boolean;
 };
 
 type Modify<T, R> = Omit<T, keyof R> & R;
@@ -122,6 +123,7 @@ type Props<T> = Modify<
 type State = {
   activeKey: string | null;
   hoverComponent: React.ReactNode | null;
+  isPressedIn: boolean;
 };
 
 type CellData = {
@@ -148,7 +150,8 @@ function onNextFrame(callback: () => void) {
 class DraggableFlatList<T> extends React.Component<Props<T>, State> {
   state: State = {
     activeKey: null,
-    hoverComponent: null
+    hoverComponent: null,
+    isPressedIn: false
   };
 
   containerRef = React.createRef<Animated.View>();
@@ -347,7 +350,8 @@ class DraggableFlatList<T> extends React.Component<Props<T>, State> {
       this.setState(
         {
           activeKey,
-          hoverComponent
+          hoverComponent,
+          isPressedIn: true
         },
         () => {
           const index = this.keyToIndex.get(activeKey);
@@ -363,6 +367,9 @@ class DraggableFlatList<T> extends React.Component<Props<T>, State> {
   onRelease = ([index]: readonly number[]) => {
     const { onRelease } = this.props;
     this.isPressedIn.js = false;
+    this.setState({
+      isPressedIn: false
+    });
     onRelease && onRelease(index);
   };
 
@@ -869,6 +876,7 @@ class DraggableFlatList<T> extends React.Component<Props<T>, State> {
         item={item}
         drag={this.drag}
         onUnmount={onUnmount}
+        isPressedIn={this.state.isPressedIn}
       />
     );
   };
@@ -1064,13 +1072,22 @@ type RowItemProps<T> = {
   renderItem: (params: RenderItemParams<T>) => React.ReactNode;
   itemKey: string;
   onUnmount: () => void;
+  isPressedIn: boolean;
 };
 
 class RowItem<T> extends React.PureComponent<RowItemProps<T>> {
   drag = () => {
-    const { drag, renderItem, item, keyToIndex, itemKey } = this.props;
+    const {
+      drag,
+      renderItem,
+      item,
+      keyToIndex,
+      itemKey,
+      isPressedIn
+    } = this.props;
     const hoverComponent = renderItem({
       isActive: true,
+      isPressedIn,
       item,
       index: keyToIndex.get(itemKey),
       drag: () => console.log("## attempt to call drag() on hovering component")
@@ -1086,6 +1103,7 @@ class RowItem<T> extends React.PureComponent<RowItemProps<T>> {
     const { renderItem, item, keyToIndex, itemKey } = this.props;
     return renderItem({
       isActive: false,
+      isPressedIn: false,
       item,
       index: keyToIndex.get(itemKey),
       drag: this.drag
