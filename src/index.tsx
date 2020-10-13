@@ -860,6 +860,7 @@ class DraggableFlatList<T> extends React.Component<Props<T>, State> {
   };
 
   renderItem = ({ item, index }: { item: T; index: number }) => {
+    console.log("List renderItem isPressedIn", this.state.isPressedIn);
     const key = this.keyExtractor(item, index);
     if (index !== this.keyToIndex.get(key)) this.keyToIndex.set(key, index);
     const { renderItem } = this.props;
@@ -1085,6 +1086,7 @@ class RowItem<T> extends React.PureComponent<RowItemProps<T>> {
       itemKey,
       isPressedIn
     } = this.props;
+    console.log("RowItem drag isPressedIn", isPressedIn);
     const hoverComponent = renderItem({
       isActive: true,
       isPressedIn,
@@ -1100,7 +1102,8 @@ class RowItem<T> extends React.PureComponent<RowItemProps<T>> {
   }
 
   render() {
-    const { renderItem, item, keyToIndex, itemKey } = this.props;
+    const { renderItem, item, keyToIndex, itemKey, isPressedIn } = this.props;
+    console.log("RowItem render isPressedIn", isPressedIn);
     return renderItem({
       isActive: false,
       isPressedIn: false,
